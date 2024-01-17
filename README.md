@@ -27,6 +27,20 @@ existing data in the database.
 ---
 
 ## How to run it
+
+### DB Config
+1. Create a DB `config.py` file in the parent folder with the following info:
+```python
+# Database Configuration
+DB_CONFIG = {
+    'host': 'YOUR_HOST',
+    'user': 'YOUR_USER',
+    'passwd': 'YOUR_PASSWORD',
+    'database': 'YOUR_DATABASE_NAME'
+}
+```
+
+### Run script
 I personally recommend it to run it in a virtual environment, as follows:
 1. Open a command prompt or terminal window.
 2. Navigate to the directory where you want to create the virtual environment. You can use the `cd` command to change directories.
