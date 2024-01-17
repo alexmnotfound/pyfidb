@@ -43,7 +43,7 @@ class DatabaseManager:
         try:
             cursor.execute(query)
             connection.commit()
-            self.logger.info(f"--- Process Success ---")
+            self.logger.debug(f"--- Process Success ---")
         except mysql.connector.Error as err:
             self.logger.error(f"Failed creating table {table_name}: {err}")
         finally:
@@ -63,7 +63,7 @@ class DatabaseManager:
             cursor.close()
 
     def insert_data(self, connection, table_name, data):
-        self.logger.info(f"--- Inserting Data into table {table_name}")
+        self.logger.debug(f"--- Inserting Data into table {table_name}")
         self.logger.debug(f"Data to be inserted: {data}")
 
         cursor = connection.cursor()
@@ -71,7 +71,7 @@ class DatabaseManager:
         try:
             cursor.executemany(query, data)
             connection.commit()
-            self.logger.info(f"--- Process Success ---")
+            self.logger.debug(f"--- Process Success ---")
         except mysql.connector.Error as err:
             self.logger.error(f"Failed to insert data into {table_name}: {err}")
         finally:

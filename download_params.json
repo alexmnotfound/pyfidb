@@ -1,0 +1,6 @@
+{
+    "symbols": ["BTCUSDT", "ETHUSDT"],
+    "intervals": ["1w", "1d"],
+    "date_from": "2021-01-01",
+    "date_to": "2021-06-30"
+}
