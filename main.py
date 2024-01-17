@@ -12,7 +12,7 @@ from config import DB_CONFIG
 def main():
     try:
         # Configure logging
-        loggingLevel = logging.DEBUG
+        loggingLevel = logging.ERROR
 
         logging.basicConfig(
             level=loggingLevel,  # Adjust as needed (DEBUG, INFO, WARNING, ERROR, CRITICAL)
@@ -28,7 +28,7 @@ def main():
 
         # Init DB connection
         logger.debug("--- Checking for DB connection ---")
-        db_manager = DatabaseManager(DB_CONFIG['host'], DB_CONFIG['user'], DB_CONFIG['passwd'], DB_CONFIG['database'])
+        db_manager = DatabaseManager(DB_CONFIG)
         connection = db_manager.connect()
 
         # Only run when connection is reached
@@ -47,8 +47,7 @@ def main():
         if user_input == "1" or user_input == "Download":
             download_OHLC(db_manager, connection, logger)
         elif user_input == "2" or user_input == "Check":
-            print(f"\nOkay, let's check if everything is in order here...\n")
-            print(f"Actually this isn't ready yet, please come back later...\n")
+            check_database(db_manager, connection, logger)
         else:
             print("Nothing to do here, see you later :)\n")
         sys.exit(0)
@@ -130,6 +129,35 @@ def download_OHLC(db_manager, connection, logger):
             else:
                 logger.warning(
                     f"No data found for {symbol} in interval {interval} between {date_from} and {date_to}")
+
+
+def check_database(db_manager, connection, logger):
+    print(f"\n ----------------- -----------------\n")
+    print(f"Okay, let's check if everything is in order here...\n")
+    print(f"I'll check for all the existing tables unless you tell me to look for a specific ticker\n")
+
+    while True:
+        symbol = input(" Please enter your symbol, or ENTER to check all tables, or EXIT to exit the script: \n"
+                       "You > ").strip().upper()
+        if symbol == "EXIT":
+            print(f"\nExiting script...\n")
+            sys.exit(1)
+        elif symbol != "":
+            print(f"\nLooking for {symbol} in database...")
+        table_names = db_manager.fetch_tables_with_keyword(connection, symbol)
+
+        if len(table_names) > 0:
+            print(f"\n ----------------- -----------------\n")
+            print("Tables found:\n")
+            for table in table_names:
+                earliest_date, latest_date = db_manager.get_table_date_range(connection, table)
+                if earliest_date and latest_date:
+                    print(f" - '{table}': From Date: {earliest_date}, To Date: {latest_date}")
+                else:
+                    print(f" - '{table}': No date data available.")
+        else:
+            print(f"\nNo tables found containing '{symbol}'" if symbol else "\nNo tables found.")
+        print("\n")
 
 
 if __name__ == "__main__":

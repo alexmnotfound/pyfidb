@@ -4,11 +4,11 @@ from mysql.connector import errorcode
 
 
 class DatabaseManager:
-    def __init__(self, host, user, passwd, database):
-        self.host = host
-        self.user = user
-        self.passwd = passwd
-        self.database = database
+    def __init__(self, db_config):
+        self.host = db_config['host']
+        self.user = db_config['user']
+        self.passwd = db_config['passwd']
+        self.database = db_config['database']
         self.logger = logging.getLogger(__name__)  # Create a logger for this class
 
     def connect(self):
@@ -77,3 +77,38 @@ class DatabaseManager:
         finally:
             cursor.close()
             self.logger.debug(f"--- Closing cursor")
+
+    def fetch_tables_with_keyword(self, connection, keyword):
+        """Fetches names of all tables in the database that contain the given keyword."""
+        self.logger.debug(f"Fetching all table names containing '{keyword}' from the database.")
+
+        cursor = connection.cursor()
+        query = "SELECT table_name FROM information_schema.tables WHERE table_schema = %s AND table_name LIKE %s"
+        like_pattern = f"%{keyword}%"
+        try:
+            cursor.execute(query, (self.database, like_pattern))
+            # Fetch all table names that include the keyword
+            table_names = [row[0] for row in cursor.fetchall()]
+            return table_names
+        except mysql.connector.Error as err:
+            self.logger.error(f"Failed to fetch table names: {err}")
+            return []
+        finally:
+            cursor.close()
+            self.logger.debug("--- Closing cursor ---")
+
+    def get_table_date_range(self, connection, table_name):
+        """Fetches the earliest and latest date in the given table."""
+        self.logger.debug(f"Fetching date range for table {table_name}")
+
+        cursor = connection.cursor()
+        query = f"SELECT MIN(Date), MAX(Date) FROM {table_name}"
+        try:
+            cursor.execute(query)
+            result = cursor.fetchone()
+            return result  # Returns a tuple (earliest_date, latest_date)
+        except mysql.connector.Error as err:
+            self.logger.error(f"Failed to fetch date range for table {table_name}: {err}")
+            return None, None
+        finally:
+            cursor.close()
