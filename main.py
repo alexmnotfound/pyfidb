@@ -98,15 +98,17 @@ def download_OHLC(db_manager, connection, logger):
 
     for symbol in symbols:
         for interval in intervals:
-            table_name = f'{symbol}_{interval}'
-            db_manager.create_table(connection, table_name)
-
             # Fetch data from Binance for the given range
             print(f"Fetching data for {symbol} from {date_from} to {date_to} with timeframe {interval}")
             binance_data = BinanceAPI().fetch_data_for_range(symbol, interval, date_from, date_to)
             logger.debug(f'------- DEBUG FETCHED DATA ------- \n{binance_data.head(5)}\n...\n{binance_data.tail(5)}\n')
 
+            # Only do things if there is info from Binance
             if not binance_data.empty:
+                # Check for table or create it if necessary
+                table_name = f'{symbol}_{interval}'
+                db_manager.create_table(connection, table_name)
+
                 # Fetch existing data from the database
                 existing_dates = set(
                     db_manager.fetch_data_for_range(connection, table_name, date_from, date_to))
